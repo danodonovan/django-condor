@@ -1,0 +1,9 @@
+# Filename: test.dag
+#
+JOB  A  test.submit 
+JOB  B  test.submit 
+JOB  C  test.submit     
+JOB  D  test.submit
+PARENT A CHILD B C
+PARENT B C CHILD D
+
