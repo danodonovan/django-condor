@@ -1,7 +1,7 @@
 import datetime
 from django.db import models
 
-from condor.condor_tools import condor_status
+from condor.condor_tools import condor_status, condor_submit
 
 # class CondorTasks( models.Model ):
 #     """
@@ -22,6 +22,7 @@ class CondorHost( models.Model ):
     password = models.CharField( max_length=256 )
     port     = models.PositiveIntegerField( default=22 )
     env      = models.TextField( blank=True )
+    remotedir= models.CharField( max_length=256 )
 
 class AbstractJobBaseClass( models.Model ):
     """ Abstract Base Class for a condor job
@@ -35,16 +36,27 @@ class AbstractJobBaseClass( models.Model ):
 
     host    = models.ForeignKey( 'CondorHost', null=True )
 
-    def update( self ):
+    def update_status( self ):
         """ Update the job status for the given pid """
         if not self.pid: return
-        self.status = condor_status( self.pid )
+
+        if not self.host:
+            self.status = condor_status( self.pid )
+        else:
+            h = self.host
+            self.status = condor_status( self.pid,
+                hostname=h.hostname, username=h.username, password=h.password,
+                port=h.port, env=h.env, remotedir=h.remotedir )
+
         self.update = datetime.datetime.now()
         self.store_history()
         self.save()
 
     def store_history( self, save=False ):
         """ store update in history """
+        if not self.history:
+            self.history = repr( {self.update:self.status} )
+            return
         history = eval( self.history )
         if not history.has_key( self.update ):
             history[ self.update ] = self.status
@@ -58,6 +70,23 @@ class CondorJobs( AbstractJobBaseClass ):
     """
     """
     submit_script = models.FileField( upload_to='condor_jobs', blank=False )
+
+    def submit( self ):
+        """ submit a condor job """
+        if self.pid: return
+        if not self.submit_script: return
+
+        if not self.host:
+            self.pid = condor_submit( self.submit_script )
+        else:
+            h = self.host
+            self.pid = condor_submit( self.submit_script,
+                hostname=h.hostname, username=h.username, password=h.password,
+                port=h.port, env=h.env, remotedir=h.remotedir )
+
+        self.save()
+        self.update_status()
+
 
 # class CondorDags( AbstractJobBaseClass ):
 #     """ A condor DAG is a special type of condor job

@@ -9,7 +9,7 @@ class CondorError(Exception):
     def __repr__(self):
         return 'CondorError(%s)' % (self.value)
 
-condor_status = {
+condor_status_dict = {
     '0':'?',
     '1':'Idle',
     '2':'Running',
@@ -29,6 +29,7 @@ def call_condor( *args, **kwargs ):
     port     = kwargs['port']     if kwargs.has_key( 'port' )     else 22
     username = kwargs['username'] if kwargs.has_key( 'username' ) else None
     password = kwargs['password'] if kwargs.has_key( 'password' ) else None
+    remotedir= kwargs['remotedir']if kwargs.has_key( 'remotedir' )else None
 
     env = kwargs['env'] if kwargs.has_key( 'env' ) else None
 
@@ -40,33 +41,40 @@ def call_condor( *args, **kwargs ):
         stdout = stdout[0]
     else:
         # more complex call using paramiko
-        (stdout, stderr) = _connect_call( command, env, hostname, port, username, password )
+        (stdout, stderr) = _connect_call( command, env, hostname, port, username, password, remotedir )
 
     # sh not kicking up an OSError when command not found
     if stderr.__contains__( ': command not found' ):
-        raise CondorError( 'call_condor error cmd not found: %s' % command )
+        raise CondorError( 'call_condor error cmd not found: %s Full error: %s' % (command, stderr) )
 
     return (stdout, stderr)
 
 def _call( command, env ):
-    """ Internal local call command """
+    """ Local call command """
     try:
         p = subprocess.Popen( command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=env )
     except OSError:
-        raise CondorError( 'call_condor error cmd: %s' % command )
+        raise CondorError( '_call call_condor error cmd: %s' % command )
 
     stdout, stderr = p.stdout.readlines(), p.stderr.read()
 
-def _connect_call( command, env, hostname, port, username, password):
-    """ Internal remote call command """
+def _connect_call( command, env, hostname, port, username, password, remotedir):
+    """ Remote call command """
     try:
         import paramiko
     except ImportError:
         raise ImportError( 'To call a remote host python module paramiko must be installed' )
 
     # pretty nasty, but paramiko doesn't support env sending
+    pre_command = ''
+
+    if remotedir:
+        pre_command += 'cd %s; ' % remotedir
+
     if env:
-        command = ' '.join(['%s=%s' % (k,v) for k,v in env.items()]) + ' ' + command
+        pre_command += ' '.join(['%s=%s' % (k,v) for k,v in env.items()]) + ' '
+
+    command = pre_command + command
 
     client = paramiko.SSHClient()
     client.load_system_host_keys()
@@ -86,15 +94,34 @@ def _connect_call( command, env, hostname, port, username, password):
 
     return (stdout, stderr)
 
+## this are the public facing API functions
+
 def condor_status( pid, **kwargs ):
     """ Run condor_status for job pid """
 
-    (stdout, stderr) = call_condor( [ 'condor_q', '-format', '%s JobStatus', '%f' % pid], **kwargs )
+    (stdout, stderr) = call_condor( 'condor_q', '-format', '%s JobStatus', '%f' % pid, **kwargs )
 
     if stderr:
         raise CondorError( 'condor_status error: %s' % stderr )
 
     if not stdout:  job_status = ('Completed', None )
-    else:           job_status = (status[stdout], stdout)
+    else:           job_status = (condor_status_dict[stdout], stdout)
 
     return job_status
+
+def condor_submit( submit_script, **kwargs ):
+    """ Run condor_submit for job """
+
+    (stdout, stderr) = call_condor( 'condor_submit', '%s' % submit_script, **kwargs )
+
+    if stderr: raise CondorError( 'condor_submit error: %s' % stderr )
+
+    if not stderr and stdout:
+        # return the PID for this host
+        return float( stdout.split('job(s) submitted to cluster')[-1] )
+
+
+
+
+
+
