@@ -63,14 +63,6 @@ class AbstractJobBaseClass( models.Model ):
         self.history = repr( history )
         if save: self.save()
 
-    class Meta:
-        abstract = True
-
-class CondorJobs( AbstractJobBaseClass ):
-    """
-    """
-    submit_script = models.FileField( upload_to='condor_jobs', blank=False )
-
     def submit( self ):
         """ submit a condor job """
         if self.pid: return
@@ -86,6 +78,16 @@ class CondorJobs( AbstractJobBaseClass ):
 
         self.save()
         self.update_status()
+
+
+    class Meta:
+        abstract = True
+
+class CondorJobs( AbstractJobBaseClass ):
+    """
+    """
+    submit_script = models.FileField( upload_to='condor_jobs', blank=False )
+
 
 
 # class CondorDags( AbstractJobBaseClass ):

@@ -112,7 +112,9 @@ def condor_status( pid, **kwargs ):
 def condor_submit( submit_script, **kwargs ):
     """ Run condor_submit for job """
 
-    (stdout, stderr) = call_condor( 'condor_submit', '%s' % submit_script, **kwargs )
+    submit = 'condor_submit_dag' if kwargs.has_key( 'dag' ) and kwargs['dag'] else 'condor_submit'
+
+    (stdout, stderr) = call_condor( submit, '%s' % submit_script, **kwargs )
 
     if stderr: raise CondorError( 'condor_submit error: %s' % stderr )
 
