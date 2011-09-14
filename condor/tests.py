@@ -116,10 +116,18 @@ class CondorJobTest(TestCase):
 
         j.submit()
 
-        while j.status[0] != 'Completed':
-            time.sleep( 4 )
+        nsecs, maxsecs = 0, 60 * 2
+        while j.status[0] != 'Completed' and nsecs < maxsecs:
             j.update_status()
 
+            # add time control
+            time.sleep( 4 )
+            nsecs += 4
+
+        # check that we didn't time out
+        self.assertEqual( j.status[0], 'Completed' )
+
+        print j.history
 
 
 

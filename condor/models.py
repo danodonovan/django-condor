@@ -3,18 +3,6 @@ from django.db import models
 
 from condor.condor_tools import condor_status, condor_submit
 
-# class CondorTasks( models.Model ):
-#     """
-#     CondorTasks class
-#         This class is the highest level class for managing all lower tasks
-#     """
-#
-#     name = models.CharField( max_length=256 )
-#
-#     condor_dags = models.ManyToManyField( 'CondorDags' )
-#     condor_jobs = models.ManyToManyField( 'CondorJobs' )
-
-
 class CondorHost( models.Model ):
     """ Hold details for the condor host """
     hostname = models.CharField( max_length=256 )
@@ -84,38 +72,9 @@ class AbstractJobBaseClass( models.Model ):
         abstract = True
 
 class CondorJobs( AbstractJobBaseClass ):
-    """
+    """ CondorJobs - a model to control and track a single condor job - submitted locally
+        or on a remote scheduler.
     """
     submit_script = models.FileField( upload_to='condor_jobs', blank=False )
 
 
-
-# class CondorDags( AbstractJobBaseClass ):
-#     """ A condor DAG is a special type of condor job
-#     """
-#     condor_jobs = models.ManyToManyField( 'CondorJobs' )
-
-
-
-## History models - for keeping track of past job status
-# class AbstractHistoryBaseClass( models.Model ):
-#     """ Abstract Base Class for HistoryJob and HistoryJob
-#         This is simply a table of the results of every status update - also tracking
-#         the job / dag which was updated and the time of the update.
-#     """
-#     update = models.DateTimeField()
-#     status = models.CharField( max_length=32 )
-#
-#     class Meta:
-#         abstract = True
-#         ordering = ['update']
-#
-# class HistoryJob( AbstractHistoryBaseClass ):
-#     """ Track the history of a job
-#     """
-#     job = models.ForeignKey( 'CondorJobs' )
-#
-# class HistoryDag( AbstractHistoryBaseClass ):
-#     """ Track the history of a DAG
-#     """
-#     dag = models.ForeignKey( 'CondorDags' )
