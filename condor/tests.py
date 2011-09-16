@@ -23,19 +23,19 @@ class ToolTest(TestCase):
 
     def test_connection_call_condor( self ):
         """ Make sure that nonsense test fails """
-        (out, err) = call_condor( 'ls',  hostname='shell.nebiogrid.org'  )
+        (out, err) = call_condor( 'ls',  hostname=s.TEST_CONDOR_INFO['hostname']  )
 
     def test_remote_no_env_call_condor( self ):
         with self.assertRaises(CondorError):
-            (out, err) = call_condor( 'condor_q', hostname='shell.nebiogrid.org' )
+            (out, err) = call_condor( 'condor_q', hostname=s.TEST_CONDOR_INFO['hostname'] )
 
     def test_remote_hostname_call_condor( self ):
-        (out, err) = call_condor( 'hostname', hostname='shell.nebiogrid.org', env=None )
-        self.assertEqual( out.strip(), 'shell.nebiogrid.org' )
+        (out, err) = call_condor( 'hostname', hostname=s.TEST_CONDOR_INFO['hostname'], env=None )
+        self.assertEqual( out.strip(), s.TEST_CONDOR_INFO['hostname'] )
 
     def test_remote_call_condor( self ):
         env = s.GRID_ENV['osg']
-        (out, err) = call_condor( 'condor_q', hostname='shell.nebiogrid.org', env=env )
+        (out, err) = call_condor( 'condor_q', hostname=s.TEST_CONDOR_INFO['hostname'], env=env )
         self.assertIn( '-- Submitter:', out )
 
 
@@ -45,7 +45,7 @@ class CondorJobTest(TestCase):
     def test_simple_job(self):
         """ """
         j = CondorJobs()
-        j.submit_script = 'test_scripts/test.sh'
+        j.submit_script = s.TEST_CONDOR_INFO['submit_script']
         j.save()
 
         j.update_status()
@@ -58,61 +58,61 @@ class CondorJobTest(TestCase):
 
     def test_host(self):
 
-        h = CondorHost( hostname='shell.nebiogrid.org', username='odonovan' )
+        h = CondorHost( hostname=s.TEST_CONDOR_INFO['hostname'], username=s.TEST_CONDOR_INFO['username'] )
         h.save()
 
     def test_remote_host_no_env(self):
 
-        h = CondorHost( hostname='shell.nebiogrid.org', username='odonovan' )
+        h = CondorHost( hostname=s.TEST_CONDOR_INFO['hostname'], username=s.TEST_CONDOR_INFO['username'] )
         h.save()
 
-        self.assertEqual( 'shell.nebiogrid.org', h.hostname )
-        self.assertEqual( 'odonovan', h.username )
+        self.assertEqual( s.TEST_CONDOR_INFO['hostname'], h.hostname )
+        self.assertEqual( s.TEST_CONDOR_INFO['username'], h.username )
 
-        j = CondorJobs( host=h, submit_script='test_scripts/test.sh' )
+        j = CondorJobs( host=h, submit_script=s.TEST_CONDOR_INFO['submit_script'] )
         j.save()
 
         self.assertEqual( 'Not Submitted', j.status )
-        self.assertEqual( 'shell.nebiogrid.org', j.host.hostname )
-        self.assertEqual( 'odonovan', j.host.username )
+        self.assertEqual( s.TEST_CONDOR_INFO['hostname'], j.host.hostname )
+        self.assertEqual( s.TEST_CONDOR_INFO['username'], j.host.username )
 
         with self.assertRaises(CondorError):
             j.submit()
 
     def test_remote_host_with_env(self):
 
-        h = CondorHost( hostname='shell.nebiogrid.org', username='odonovan',
+        h = CondorHost( hostname=s.TEST_CONDOR_INFO['hostname'], username=s.TEST_CONDOR_INFO['username'],
             env=s.GRID_ENV['osg'] )
         h.save()
 
-        self.assertEqual( 'shell.nebiogrid.org', h.hostname )
-        self.assertEqual( 'odonovan', h.username )
+        self.assertEqual( s.TEST_CONDOR_INFO['hostname'], h.hostname )
+        self.assertEqual( s.TEST_CONDOR_INFO['username'], h.username )
 
-        j = CondorJobs( host=h, submit_script='test_scripts/test.sh' )
+        j = CondorJobs( host=h, submit_script=s.TEST_CONDOR_INFO['submit_script'] )
         j.save()
 
         self.assertEqual( 'Not Submitted', j.status )
-        self.assertEqual( 'shell.nebiogrid.org', j.host.hostname )
-        self.assertEqual( 'odonovan', j.host.username )
+        self.assertEqual( s.TEST_CONDOR_INFO['hostname'], j.host.hostname )
+        self.assertEqual( s.TEST_CONDOR_INFO['username'], j.host.username )
 
         with self.assertRaises(CondorError):
             j.submit()
 
     def test_remote_host_with_env_and_remote_file(self):
 
-        h = CondorHost( hostname='shell.nebiogrid.org', username='odonovan',
-            env=s.GRID_ENV['osg'], remotedir='/home/odonovan/sandbox/projects/py_condor/tests' )
+        h = CondorHost( hostname=s.TEST_CONDOR_INFO['hostname'], username=s.TEST_CONDOR_INFO['username'],
+            env=s.GRID_ENV['osg'], remotedir=s.TEST_CONDOR_INFO['remotedir'] )
         h.save()
 
-        self.assertEqual( 'shell.nebiogrid.org', h.hostname )
-        self.assertEqual( 'odonovan', h.username )
+        self.assertEqual( s.TEST_CONDOR_INFO['hostname'], h.hostname )
+        self.assertEqual( s.TEST_CONDOR_INFO['username'], h.username )
 
-        j = CondorJobs( host=h, submit_script='test.submit' )
+        j = CondorJobs( host=h, submit_script=s.TEST_CONDOR_INFO['submit_script'] )
         j.save()
 
         self.assertEqual( 'Not Submitted', j.status )
-        self.assertEqual( 'shell.nebiogrid.org', j.host.hostname )
-        self.assertEqual( 'odonovan', j.host.username )
+        self.assertEqual( s.TEST_CONDOR_INFO['hostname'], j.host.hostname )
+        self.assertEqual( s.TEST_CONDOR_INFO['username'], j.host.username )
 
         j.submit()
 
