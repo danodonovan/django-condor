@@ -29,6 +29,18 @@ isn't very pleasant so django-condor provides a mechanism for you to do this - s
 For debugging, the entire django-condor DB can be dropped with
 `python manage.py reset condor`
 
+For testing and general convenience, the settings for connecting to your condor submission
+node can be held in a dict in settings.py that looks similar to:
+
+TEST_CONDOR_INFO = {
+    'hostname'      :   <host name or IP>,
+    'username'      :   <username to connect with>,
+    'password'      :   <password - can be None if local or password free ssh set>,
+    'remotedir'     :   <remote directory in which to run 'condor_submit'>,
+    'submit_script' :   <local submit script>,
+}
+
+
 Contact
 -------
 Written by Dan O'Donovan as part of the SBGrid portal project.
