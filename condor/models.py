@@ -24,6 +24,11 @@ class AbstractJobBaseClass( models.Model ):
 
     host    = models.ForeignKey( 'CondorHost', null=True )
 
+    name    = models.CharField( blank=True )
+    timeout = models.IntegerField( default=1800 )
+
+    ram_min = models.CharField( default='2048 * GB')
+
     def update_status( self ):
         """ Update the job status for the given pid """
         if not self.pid: return
@@ -76,5 +81,6 @@ class CondorJobs( AbstractJobBaseClass ):
         or on a remote scheduler.
     """
     submit_script = models.FileField( upload_to='condor_jobs', blank=False )
+    executable    = models.FileField( upload_to='condor_exec', blank=True )
 
 
