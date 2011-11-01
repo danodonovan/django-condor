@@ -12,6 +12,9 @@ class CondorHost( models.Model ):
     env      = models.TextField( blank=True )
     remotedir= models.CharField( max_length=256 )
 
+    class Meta:
+        verbose_name_plural = 'CondorHosts'
+
 class AbstractJobBaseClass( models.Model ):
     """ Abstract Base Class for a condor job
     """
@@ -76,11 +79,12 @@ class AbstractJobBaseClass( models.Model ):
     class Meta:
         abstract = True
 
-class CondorJobs( AbstractJobBaseClass ):
-    """ CondorJobs - a model to control and track a single condor job - submitted locally
+class CondorJob( AbstractJobBaseClass ):
+    """ CondorJob - a model to control and track a single condor job - submitted locally
         or on a remote scheduler.
     """
     submit_script = models.FileField( upload_to='condor_jobs', blank=False )
     executable    = models.FileField( upload_to='condor_exec', blank=True )
 
-
+    class Meta:
+        verbose_name_plural = 'CondorJobs'
