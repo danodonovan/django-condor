@@ -24,10 +24,10 @@ class AbstractJobBaseClass( models.Model ):
 
     host    = models.ForeignKey( 'CondorHost', null=True )
 
-    name    = models.CharField( blank=True )
+    name    = models.CharField(max_length=255, blank=True )
     timeout = models.IntegerField( default=1800 )
 
-    ram_min = models.CharField( default='2048 * GB')
+    ram_min = models.CharField(max_length=255, default='2048 * GB')
 
     def update_status( self ):
         """ Update the job status for the given pid """
