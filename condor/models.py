@@ -76,8 +76,8 @@ class AbstractJobBaseClass( models.Model ):
     class Meta:
         abstract = True
 
-class CondorJobs( AbstractJobBaseClass ):
-    """ CondorJobs - a model to control and track a single condor job - submitted locally
+class CondorJob( AbstractJobBaseClass ):
+    """ CondorJob - a model to control and track a single condor job - submitted locally
         or on a remote scheduler.
     """
     submit_script = models.FileField( upload_to='condor_jobs', blank=False )

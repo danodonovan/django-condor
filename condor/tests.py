@@ -10,7 +10,7 @@ import time
 from django.test import TestCase
 from django.conf import settings as s
 
-from condor.models import CondorJobs, CondorHost
+from condor.models import CondorJob, CondorHost
 from condor.condor_tools import call_condor, CondorError
 
 class ToolTest(TestCase):
@@ -41,7 +41,7 @@ class CondorJobTest(TestCase):
 
     def test_simple_job(self):
         """ """
-        j = CondorJobs()
+        j = CondorJob()
         j.submit_script = s.TEST_CONDOR_INFO['submit_script']
         j.save()
 
@@ -66,7 +66,7 @@ class CondorJobTest(TestCase):
         self.assertEqual( s.TEST_CONDOR_INFO['hostname'], h.hostname )
         self.assertEqual( s.TEST_CONDOR_INFO['username'], h.username )
 
-        j = CondorJobs( host=h, submit_script=s.TEST_CONDOR_INFO['submit_script'] )
+        j = CondorJob( host=h, submit_script=s.TEST_CONDOR_INFO['submit_script'] )
         j.save()
 
         self.assertEqual( 'Not Submitted', j.status )
@@ -85,7 +85,7 @@ class CondorJobTest(TestCase):
         self.assertEqual( s.TEST_CONDOR_INFO['hostname'], h.hostname )
         self.assertEqual( s.TEST_CONDOR_INFO['username'], h.username )
 
-        j = CondorJobs( host=h, submit_script=s.TEST_CONDOR_INFO['submit_script'] )
+        j = CondorJob( host=h, submit_script=s.TEST_CONDOR_INFO['submit_script'] )
         j.save()
 
         self.assertEqual( 'Not Submitted', j.status )
@@ -104,7 +104,7 @@ class CondorJobTest(TestCase):
         self.assertEqual( s.TEST_CONDOR_INFO['hostname'], h.hostname )
         self.assertEqual( s.TEST_CONDOR_INFO['username'], h.username )
 
-        j = CondorJobs( host=h, submit_script=s.TEST_CONDOR_INFO['submit_script'] )
+        j = CondorJob( host=h, submit_script=s.TEST_CONDOR_INFO['submit_script'] )
         j.save()
 
         self.assertEqual( 'Not Submitted', j.status )
