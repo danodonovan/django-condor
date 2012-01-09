@@ -1,21 +1,21 @@
 import os
 from distutils.core import setup
 
-VERSION = '0.1'
+VERSION = '0.2'
 
 setup(
     name='django-condor',
     version=VERSION,
     description='A simple bridge between Condor and django',
     long_description=file(
-        os.path.join(os.path.dirname(__file__), 'README')
+        os.path.join(os.path.dirname(__file__), 'README.md')
     ).read(),
     author="Daniel O'Donovan",
     author_email='odonovan@hkl.hms.harvard.edu',
     license='BSD',
     url='http://github.com/danodonovan/django-condor',
     classifiers=[
-        'Development Status :: 1 - Alpha',
+        'Development Status :: %s - Alpha' % VERSION,
         'Intended Audience :: Developers',
         'License :: OSI Approved :: BSD License',
         'Programming Language :: Python',
