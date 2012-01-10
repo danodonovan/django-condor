@@ -10,7 +10,11 @@ import time
 from django.test import TestCase
 from django.conf import settings as s
 
+<<<<<<< HEAD
 from condor.models import CondorJob, CondorHost
+=======
+from condor.models import CondorScriptedJob, CondorHost
+>>>>>>> master
 from condor.condor_tools import call_condor, CondorError
 
 
@@ -52,6 +56,7 @@ class ToolTest(TestCase):
 
     def test_remote_hostname_call_condor(self):
         """ Test that the machine being connected to is itself - may fail! """
+
         (out, err) = call_condor('hostname', hostname=testHostname, env=None)
         self.assertEqual(out.strip(), testHostname)
 
@@ -60,11 +65,12 @@ class ToolTest(TestCase):
         (out, err) = call_condor('condor_q', hostname=testHostname, env=GRID_ENV)
         self.assertIn('-- Submitter:', out)
 
-class CondorJobTest(TestCase):
+class CondorScriptedJobTest(TestCase):
     """ Testing for the Condor django models """
 
     def test_simple_job(self):
         """ """
+
         j = CondorJob()
         j.submit_script = testSubmitScript
         j.save()
@@ -79,10 +85,12 @@ class CondorJobTest(TestCase):
 
     def test_host(self):
 
+
         h = CondorHost(hostname=testHostname, username=testUsername)
         h.save()
 
     def test_remote_host_no_env(self):
+
 
         h = CondorHost(hostname=testHostname, username=testUsername)
         h.save()
@@ -127,6 +135,7 @@ class CondorJobTest(TestCase):
 
         self.assertEqual(testHostname, h.hostname)
         self.assertEqual(testUsername, h.username)
+
 
         j = CondorJob(host=h, submit_script=testSubmitScript)
         j.save()

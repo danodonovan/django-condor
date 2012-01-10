@@ -1,10 +1,13 @@
 import datetime
 from django.db import models
 
-from condor.condor_tools import condor_status, condor_submit
+from condor import condorBinaryUpload, condorScriptUpload
+import condor.fields as custom_fields
+from condor.condor_tools import condor_status, condor_submit, condor_classad_template
 
 class CondorHost(models.Model):
     """ Hold details for the condor host """
+
     hostname = models.CharField(max_length=255)
     username = models.CharField(max_length=255)
     password = models.CharField(max_length=255)
@@ -81,12 +84,53 @@ class AbstractJobBaseClass(models.Model):
     class Meta:
         abstract = True
 
-class CondorJob(AbstractJobBaseClass):
-    """ CondorJob - a model to control and track a single condor job - submitted locally
-        or on a remote scheduler.
+def CondorJob( AbstractJobBaseClass ):
+    """ CondorJob - a model to control and track a single condor job defined by
+            values given through django.
     """
-    submit_script = models.FileField(upload_to='condor_jobs', blank=False)
-    executable = models.FileField(upload_to='condor_exec', blank=True)
+    # these values job classAds
+    Arguments               = custom_fields.DictionaryField()
+    Output                  = models.CharField( blank=True )
+    Error                   = models.CharField( blank=True )
+    Log                     = models.CharField( blank=True )
+    Should_transfer_files   = models.CharField( blank=True )
+    When_to_transfer_output = models.CharField( blank=True )
+    Transfer_output_files   = models.CharField( blank=True )
+    Notification            = models.CharField( blank=True )
+    Priority                = models.CharField( blank=True )
+    Requirements            = models.CharField( blank=True )
+    Periodic_remove         = models.CharField( blank=True )
+    X509userproxy           = models.CharField( blank=True )
+    Universe                = models.CharField( blank=True )
+
+
+
+    timeout     = models.IntegerField( default=1800 )
+
+    ram_min = models.CharField( default=2048 * GB )
+
+    class Meta:
+        verbose_name_plural = 'CondorJobs'
+
+    def _write_classad( self ):
+        # condor_classad_template
+        pass
+
+    # Arguments               = ${arguments}
+    # Output                  = ${stdoutFile}
+    # Error                   = ${stderrFile}
+    # Log                     = ${logFile}
+    # Should_transfer_files   = ${transferYesNoBool}
+    # When_to_transfer_output = ${whenTransfer}
+    # Transfer_output_files   = ${outputFilesList}
+    # Notification            = ${notification}
+    # Priority                = ${priority}
+    # Requirements            = ${requirements}
+    # Periodic_remove         = ${periodicRemove}
+    # ${X509userproxy}
+    # Universe                = ${universe}
+    #
+    # Queue
 
 class CondorDagJob(AbstractJobBaseClass):
     """ CondorDagJob - a model to control and track a single condor dag job - submitted locally

@@ -41,11 +41,13 @@ def call_condor(*args, **kwargs):
         stdout = stdout[0]
     else:
         # more complex call using paramiko
-        (stdout, stderr) = _connect_call(command, env, hostname, port, username, password, remotedir)
+        (stdout, stderr) = _connect_call(   command, env, hostname, port,
+                                            username, password, remotedir )
 
     # sh not kicking up an OSError when command not found
-    if stderr.__contains__(': command not found'):
-        raise CondorError('call_condor error cmd not found: %s Full error: %s' % (command, stderr))
+    if stderr.__contains__( ': command not found' ):
+        raise CondorError( 'call_condor error cmd not found: %s Full error: %s' % \
+            (command, stderr) )
 
     return (stdout, stderr)
 
@@ -124,8 +126,23 @@ def condor_submit(submit_script, **kwargs):
         # return the PID for this host
         return float(stdout.split('job(s) submitted to cluster')[-1])
 
+condor_classad_template = """
+Executable              = ${executable}
+Arguments               = ${arguments}
+Output                  = ${stdoutFile}
+Error                   = ${stderrFile}
+Log                     = ${logFile}
+Should_transfer_files   = ${transferYesNoBool}
+When_to_transfer_output = ${whenTransfer}
+Transfer_output_files   = ${outputFilesList}
+Notification            = ${notification}
+Priority                = ${priority}
+Requirements            = ${requirements}
+Periodic_remove         = ${periodicRemove}
+${X509userproxy}
+Universe                = ${universe}
 
-
-
+Queue
+"""
 
 
