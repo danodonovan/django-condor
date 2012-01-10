@@ -3,7 +3,7 @@ from django.db import models
 
 from condor.condor_tools import condor_status, condor_submit
 
-class CondorHost( models.Model ):
+class CondorHost(models.Model):
     """ Hold details for the condor host """
     hostname = models.CharField(max_length=255)
     username = models.CharField(max_length=255)
@@ -12,7 +12,7 @@ class CondorHost( models.Model ):
     env = models.TextField(blank=True)
     remotedir = models.CharField(max_length=255)
 
-class AbstractJobBaseClass( models.Model ):
+class AbstractJobBaseClass(models.Model):
     """ Abstract Base Class for a condor job
     """
     pid = models.PositiveIntegerField(default=0)
@@ -35,7 +35,7 @@ class AbstractJobBaseClass( models.Model ):
     def __unicode__(self):
         return '<condor %d : %s>' % (self.pid, self.name)
 
-    def update_status( self ):
+    def update_status(self):
         """ Update the job status for the given pid """
         if not self.pid: return
 

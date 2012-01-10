@@ -9,7 +9,7 @@ setup(
     description='A simple bridge between Condor and django',
     long_description=file(
         os.path.join(os.path.dirname(__file__), 'README.md')
-    ).read(),
+   ).read(),
     author="Daniel O'Donovan",
     author_email='odonovan@hkl.hms.harvard.edu',
     license='BSD',
