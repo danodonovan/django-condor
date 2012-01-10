@@ -1,7 +1,9 @@
 import datetime
 from django.db import models
 
-from condor.condor_tools import condor_status, condor_submit
+from condor import condorBinaryUpload, condorScriptUpload
+import condor.fields as custom_fields
+from condor.condor_tools import condor_status, condor_submit, condor_classad_template
 
 class CondorHost( models.Model ):
     """ Hold details for the condor host """
@@ -19,6 +21,7 @@ class AbstractJobBaseClass( models.Model ):
     """ Abstract Base Class for a condor job
     """
     pid     = models.PositiveIntegerField( default=0 )
+    name    = models.CharField( blank=True )
 
     status  = models.CharField( max_length=32, default='Not Submitted' )
     update  = models.DateTimeField( auto_now_add=True )
@@ -27,10 +30,10 @@ class AbstractJobBaseClass( models.Model ):
 
     host    = models.ForeignKey( 'CondorHost', null=True )
 
-    name    = models.CharField( blank=True )
-    timeout = models.IntegerField( default=1800 )
+    executable    = models.FileField( upload_to=condorBinaryUpload, blank=True )
 
-    ram_min = models.CharField( default='2048 * GB')
+    # if this isn't set by CondorScriptedJob it is created by CondorJob
+    classAd = models.FileField( upload_to=condorScriptUpload, blank=False )
 
     def update_status( self ):
         """ Update the job status for the given pid """
@@ -79,12 +82,78 @@ class AbstractJobBaseClass( models.Model ):
     class Meta:
         abstract = True
 
-class CondorJob( AbstractJobBaseClass ):
-    """ CondorJob - a model to control and track a single condor job - submitted locally
-        or on a remote scheduler.
+class CondorScriptedJob( AbstractJobBaseClass ):
+    """ CondorScriptedJob - a model to control and track a single condor job defined by
+            a script. Submitted locally or on a remote scheduler.
     """
-    submit_script = models.FileField( upload_to='condor_jobs', blank=False )
-    executable    = models.FileField( upload_to='condor_exec', blank=True )
+
+    class Meta:
+        verbose_name_plural = 'CondorScriptedJobs'
+
+def CondorJob( AbstractJobBaseClass ):
+    """ CondorJob - a model to control and track a single condor job defined by
+            values given through django.
+    """
+    # these values job classAds
+    Arguments               = custom_fields.DictionaryField()
+    Output                  = models.CharField( blank=True )
+    Error                   = models.CharField( blank=True )
+    Log                     = models.CharField( blank=True )
+    Should_transfer_files   = models.CharField( blank=True )
+    When_to_transfer_output = models.CharField( blank=True )
+    Transfer_output_files   = models.CharField( blank=True )
+    Notification            = models.CharField( blank=True )
+    Priority                = models.CharField( blank=True )
+    Requirements            = models.CharField( blank=True )
+    Periodic_remove         = models.CharField( blank=True )
+    X509userproxy           = models.CharField( blank=True )
+    Universe                = models.CharField( blank=True )
+
+
+
+    timeout     = models.IntegerField( default=1800 )
+
+    ram_min = models.CharField( default=2048 * GB )
 
     class Meta:
         verbose_name_plural = 'CondorJobs'
+
+    def _write_classad( self ):
+        # condor_classad_template
+        pass
+
+    # Arguments               = ${arguments}
+    # Output                  = ${stdoutFile}
+    # Error                   = ${stderrFile}
+    # Log                     = ${logFile}
+    # Should_transfer_files   = ${transferYesNoBool}
+    # When_to_transfer_output = ${whenTransfer}
+    # Transfer_output_files   = ${outputFilesList}
+    # Notification            = ${notification}
+    # Priority                = ${priority}
+    # Requirements            = ${requirements}
+    # Periodic_remove         = ${periodicRemove}
+    # ${X509userproxy}
+    # Universe                = ${universe}
+    #
+    # Queue
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

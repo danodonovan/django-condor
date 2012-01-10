@@ -22,6 +22,7 @@ echo "*** Running as: $0" "$@"
 echo "&&& This is sent to standard error" 1>&2
 
 echo "sleep 60"
+sleep 60
 
 # checking for transferred files
 echo "This should be returned" >> results_data.out

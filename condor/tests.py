@@ -10,7 +10,7 @@ import time
 from django.test import TestCase
 from django.conf import settings as s
 
-from condor.models import CondorJob, CondorHost
+from condor.models import CondorScriptedJob, CondorHost
 from condor.condor_tools import call_condor, CondorError
 
 class ToolTest(TestCase):
@@ -28,20 +28,22 @@ class ToolTest(TestCase):
 
     def test_remote_hostname_call_condor( self ):
         """ Test that the machine being connected to is itself - may fail! """
-        (out, err) = call_condor( 'hostname', hostname=s.TEST_CONDOR_INFO['hostname'], env=None )
+        (out, err) = call_condor( 'hostname', hostname=s.TEST_CONDOR_INFO['hostname'],
+            env=None )
         self.assertEqual( out.strip(), s.TEST_CONDOR_INFO['hostname'] )
 
     def test_remote_call_condor( self ):
         """ Test condor on established grid """
-        (out, err) = call_condor( 'condor_q', hostname=s.TEST_CONDOR_INFO['hostname'], env=s.GRID_ENV['osg'] )
+        (out, err) = call_condor( 'condor_q', hostname=s.TEST_CONDOR_INFO['hostname'],
+            env=s.GRID_ENV['osg'] )
         self.assertIn( '-- Submitter:', out )
 
-class CondorJobTest(TestCase):
+class CondorScriptedJobTest(TestCase):
     """ Testing for the Condor django models """
 
     def test_simple_job(self):
         """ """
-        j = CondorJob()
+        j = CondorScriptedJob()
         j.submit_script = s.TEST_CONDOR_INFO['submit_script']
         j.save()
 
@@ -55,18 +57,20 @@ class CondorJobTest(TestCase):
 
     def test_host(self):
 
-        h = CondorHost( hostname=s.TEST_CONDOR_INFO['hostname'], username=s.TEST_CONDOR_INFO['username'] )
+        h = CondorHost( hostname=s.TEST_CONDOR_INFO['hostname'],
+            username=s.TEST_CONDOR_INFO['username'] )
         h.save()
 
     def test_remote_host_no_env(self):
 
-        h = CondorHost( hostname=s.TEST_CONDOR_INFO['hostname'], username=s.TEST_CONDOR_INFO['username'] )
+        h = CondorHost( hostname=s.TEST_CONDOR_INFO['hostname'],
+            username=s.TEST_CONDOR_INFO['username'] )
         h.save()
 
         self.assertEqual( s.TEST_CONDOR_INFO['hostname'], h.hostname )
         self.assertEqual( s.TEST_CONDOR_INFO['username'], h.username )
 
-        j = CondorJob( host=h, submit_script=s.TEST_CONDOR_INFO['submit_script'] )
+        j = CondorScriptedJob( host=h, submit_script=s.TEST_CONDOR_INFO['submit_script'] )
         j.save()
 
         self.assertEqual( 'Not Submitted', j.status )
@@ -78,14 +82,15 @@ class CondorJobTest(TestCase):
 
     def test_remote_host_with_env(self):
 
-        h = CondorHost( hostname=s.TEST_CONDOR_INFO['hostname'], username=s.TEST_CONDOR_INFO['username'],
-            env=s.GRID_ENV['osg'] )
+        h = CondorHost( hostname=s.TEST_CONDOR_INFO['hostname'],
+                        username=s.TEST_CONDOR_INFO['username'],
+                        env=s.GRID_ENV['osg'] )
         h.save()
 
         self.assertEqual( s.TEST_CONDOR_INFO['hostname'], h.hostname )
         self.assertEqual( s.TEST_CONDOR_INFO['username'], h.username )
 
-        j = CondorJob( host=h, submit_script=s.TEST_CONDOR_INFO['submit_script'] )
+        j = CondorScriptedJob( host=h, submit_script=s.TEST_CONDOR_INFO['submit_script'] )
         j.save()
 
         self.assertEqual( 'Not Submitted', j.status )
@@ -97,14 +102,15 @@ class CondorJobTest(TestCase):
 
     def test_remote_host_with_env_and_remote_file(self):
 
-        h = CondorHost( hostname=s.TEST_CONDOR_INFO['hostname'], username=s.TEST_CONDOR_INFO['username'],
-            env=s.GRID_ENV['osg'], remotedir=s.TEST_CONDOR_INFO['remotedir'] )
+        h = CondorHost( hostname=s.TEST_CONDOR_INFO['hostname'],
+                        username=s.TEST_CONDOR_INFO['username'],
+                        env=s.GRID_ENV['osg'], remotedir=s.TEST_CONDOR_INFO['remotedir'] )
         h.save()
 
         self.assertEqual( s.TEST_CONDOR_INFO['hostname'], h.hostname )
         self.assertEqual( s.TEST_CONDOR_INFO['username'], h.username )
 
-        j = CondorJob( host=h, submit_script=s.TEST_CONDOR_INFO['submit_script'] )
+        j = CondorScriptedJob( host=h, submit_script=s.TEST_CONDOR_INFO['submit_script'] )
         j.save()
 
         self.assertEqual( 'Not Submitted', j.status )

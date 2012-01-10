@@ -41,18 +41,21 @@ def call_condor( *args, **kwargs ):
         stdout = stdout[0]
     else:
         # more complex call using paramiko
-        (stdout, stderr) = _connect_call( command, env, hostname, port, username, password, remotedir )
+        (stdout, stderr) = _connect_call(   command, env, hostname, port,
+                                            username, password, remotedir )
 
     # sh not kicking up an OSError when command not found
     if stderr.__contains__( ': command not found' ):
-        raise CondorError( 'call_condor error cmd not found: %s Full error: %s' % (command, stderr) )
+        raise CondorError( 'call_condor error cmd not found: %s Full error: %s' % \
+            (command, stderr) )
 
     return (stdout, stderr)
 
 def _call( command, env ):
     """ Local call command """
     try:
-        p = subprocess.Popen( command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=env )
+        p = subprocess.Popen( command, stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE, env=env )
     except OSError:
         raise CondorError( '_call call_condor error cmd: %s' % command )
 
@@ -63,7 +66,8 @@ def _connect_call( command, env, hostname, port, username, password, remotedir):
     try:
         import paramiko
     except ImportError:
-        raise ImportError( 'To call a remote host python module paramiko must be installed' )
+        raise ImportError( \
+            'To call a remote host python module paramiko must be installed' )
 
     # pretty nasty, but paramiko doesn't support env sending
     pre_command = ''
@@ -88,7 +92,7 @@ def _connect_call( command, env, hostname, port, username, password, remotedir):
         stdout = '\n'.join( line for line in stdout_fo )
         stderr = '\n'.join( line for line in stderr_fo )
     except:
-        raise CondorError( 'Error executing "%s" on remote host %s' % (command, hostname) )
+        raise CondorError( 'Error executing "%s" on remote host %s' % (command, hostname))
 
     client.close()
 
@@ -99,7 +103,8 @@ def _connect_call( command, env, hostname, port, username, password, remotedir):
 def condor_status( pid, **kwargs ):
     """ Run condor_status for job pid """
 
-    (stdout, stderr) = call_condor( 'condor_q', '-format', '%s JobStatus', '%f' % pid, **kwargs )
+    (stdout, stderr) = call_condor( 'condor_q', '-format', '%s JobStatus', '%f' % \
+                                    pid, **kwargs )
 
     if stderr:
         raise CondorError( 'condor_status error: %s' % stderr )
@@ -122,8 +127,23 @@ def condor_submit( submit_script, **kwargs ):
         # return the PID for this host
         return float( stdout.split('job(s) submitted to cluster')[-1] )
 
+condor_classad_template = """
+Executable              = ${executable}
+Arguments               = ${arguments}
+Output                  = ${stdoutFile}
+Error                   = ${stderrFile}
+Log                     = ${logFile}
+Should_transfer_files   = ${transferYesNoBool}
+When_to_transfer_output = ${whenTransfer}
+Transfer_output_files   = ${outputFilesList}
+Notification            = ${notification}
+Priority                = ${priority}
+Requirements            = ${requirements}
+Periodic_remove         = ${periodicRemove}
+${X509userproxy}
+Universe                = ${universe}
 
-
-
+Queue
+"""
 
 
