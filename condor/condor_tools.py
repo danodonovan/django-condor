@@ -73,12 +73,11 @@ def _connect_call(command, env, hostname, port, username, password, remotedir):
     if remotedir:
         pre_command += 'cd %s; ' % remotedir
 
-    if isinstance(env, dict):
+    if env and isinstance(env, dict):
         pre_command += ' '.join(['%s=%s' % (k,v) for k,v in env.items()]) + ' '
-    else:
+        command = pre_command + command
+    elif env:
         raise CondorError('env not a dictionary %s' % env)
-
-    command = pre_command + command
 
     client = paramiko.SSHClient()
     client.load_system_host_keys()

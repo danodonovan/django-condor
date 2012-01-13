@@ -1,8 +1,8 @@
 import datetime
 from django.db import models
 
-from condor import condorBinaryUpload, condorScriptUpload
-import condor.fields as custom_fields
+from condor import CONDOR_RAM_GB, condorBinaryUpload, condorScriptUpload
+from condor.fields import JSONField
 from condor.condor_tools import condor_status, condor_submit, condor_classad_template
 
 class CondorHost(models.Model):
@@ -12,14 +12,13 @@ class CondorHost(models.Model):
     username = models.CharField(max_length=255)
     password = models.CharField(max_length=255)
     port = models.PositiveIntegerField(default=22)
-    env = models.TextField(blank=True)
+    env = JSONField(blank=True)
     remotedir = models.CharField(max_length=255)
 
 class AbstractJobBaseClass(models.Model):
     """ Abstract Base Class for a condor job
     """
     pid = models.PositiveIntegerField(default=0)
-
     status = models.CharField(max_length=32, default='Not Submitted')
     update = models.DateTimeField(auto_now_add=True)
 
@@ -29,8 +28,6 @@ class AbstractJobBaseClass(models.Model):
 
     name = models.CharField(max_length=255, blank=True)
     timeout = models.IntegerField(default=1800)
-
-    ram_min = models.CharField(max_length=255, default='2048 * GB')
 
     def __str__(self):
         return unicode(self).encode('utf-8')
@@ -84,30 +81,26 @@ class AbstractJobBaseClass(models.Model):
     class Meta:
         abstract = True
 
-def CondorJob( AbstractJobBaseClass ):
+class CondorJob( AbstractJobBaseClass ):
     """ CondorJob - a model to control and track a single condor job defined by
             values given through django.
     """
     # these values job classAds
-    Arguments               = custom_fields.DictionaryField()
-    Output                  = models.CharField( blank=True )
-    Error                   = models.CharField( blank=True )
-    Log                     = models.CharField( blank=True )
-    Should_transfer_files   = models.CharField( blank=True )
-    When_to_transfer_output = models.CharField( blank=True )
-    Transfer_output_files   = models.CharField( blank=True )
-    Notification            = models.CharField( blank=True )
-    Priority                = models.CharField( blank=True )
-    Requirements            = models.CharField( blank=True )
-    Periodic_remove         = models.CharField( blank=True )
-    X509userproxy           = models.CharField( blank=True )
-    Universe                = models.CharField( blank=True )
+    Arguments               = JSONField()
+    Output                  = models.CharField(max_length=255, blank=True)
+    Error                   = models.CharField(max_length=255, blank=True)
+    Log                     = models.CharField(max_length=255, blank=True)
+    Should_transfer_files   = models.CharField(max_length=255, blank=True)
+    When_to_transfer_output = models.CharField(max_length=255, blank=True)
+    Transfer_output_files   = models.CharField(max_length=255, blank=True)
+    Notification            = models.CharField(max_length=255, blank=True)
+    Priority                = models.CharField(max_length=255, blank=True)
+    Requirements            = models.CharField(max_length=255, blank=True)
+    Periodic_remove         = models.CharField(max_length=255, blank=True)
+    X509userproxy           = models.CharField(max_length=255, blank=True)
+    Universe                = models.CharField(max_length=255, blank=True)
 
-
-
-    timeout     = models.IntegerField( default=1800 )
-
-    ram_min = models.CharField( default=2048 * GB )
+    ram_min = models.CharField(max_length=255, default='2048 * %s' % CONDOR_RAM_GB)
 
     class Meta:
         verbose_name_plural = 'CondorJobs'

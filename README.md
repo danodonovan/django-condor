@@ -21,6 +21,9 @@ settings.py Remeber to run `python manage.py syncdb' to create the correct DB en
 Usage
 -----
 
+*Apple OSX Lion* -- Apple encrypts your private keys for security. Rather than have you enter
+you password these insecurely, django-condor will fail. 
+
 You will likely need to set some environment variables in order to communicate with the
 condor instance on your submit node. Setting non-django environment variables from django
 isn't very pleasant so django-condor provides a mechanism for you to do this - see
@@ -32,14 +35,14 @@ For debugging, the entire django-condor DB can be dropped with
 For testing and general convenience, the settings for connecting to your condor submission
 node can be held in a dict in settings.py that looks similar to:
 
-TEST_CONDOR_INFO = {
-    'hostname'      :   <host name or IP>,
-    'username'      :   <username to connect with>,
-    'password'      :   <password - can be None if local or password free ssh set>,
-    'remotedir'     :   <remote directory in which to run 'condor_submit'>,
-    'submit_script' :   <local submit script>,
+CONDOR_SETTINGS = {
+    'hostname'      : <host name or IP>,
+    'username'      : <username to connect with>,
+    'password'      : <password - can be None if local or password free ssh set>,
+    'remotedir'     : <remote directory in which to run 'condor_submit'>,
+    'submit_script' : <local submit script>,
+	'env' 			: <a dictionary containg any environment variables that may need to be set>
 }
-
 
 Contact
 -------
