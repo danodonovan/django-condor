@@ -21,13 +21,14 @@ settings.py Remeber to run `python manage.py syncdb' to create the correct DB en
 Usage
 -----
 
-*Apple OSX Lion* -- Apple encrypts your private keys for security. Rather than have you enter
-you password these insecurely, django-condor will fail with a PasswordRequiredException. 
-
 You will likely need to set some environment variables in order to communicate with the
 condor instance on your submit node. Setting non-django environment variables from django
 isn't very pleasant so django-condor provides a mechanism for you to do this - see
-`GRID_ENV` in settings.py
+`CONDOR_SETTINGS` in settings.py
+
+After installing you will need to add `condor` to your `INSTALLED_APPS` and synchronise the 
+database with 
+`python manage.py syncdb`
 
 For debugging, the entire django-condor DB can be dropped with
 `python manage.py reset condor`
