@@ -22,7 +22,7 @@ Usage
 -----
 
 *Apple OSX Lion* -- Apple encrypts your private keys for security. Rather than have you enter
-you password these insecurely, django-condor will fail. 
+you password these insecurely, django-condor will fail with a PasswordRequiredException. 
 
 You will likely need to set some environment variables in order to communicate with the
 condor instance on your submit node. Setting non-django environment variables from django
