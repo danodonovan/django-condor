@@ -1,5 +1,5 @@
 import os, sys
-import subprocess, shlex
+import re, subprocess, shlex
 
 class CondorError(Exception):
     def __init__(self, value):
@@ -133,7 +133,8 @@ def condor_submit(submit_script, **kwargs):
 
     if not stderr and stdout:
         # return the PID for this host
-        return float(stdout.split('job(s) submitted to cluster')[-1])
+        temp = re.search(r'job\(s\) submitted to cluster \d+', stdout).group()
+        return int(re.search(r'\d+', temp).group())
 
 condor_classad_template = """
 Executable              = ${executable}
