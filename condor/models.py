@@ -62,18 +62,18 @@ class AbstractJobBaseClass(models.Model):
         self.history = repr(history)
         if save: self.save()
 
-    def submit(self):
+    def submit(self, dag=False):
         """ submit a condor job """
         if self.pid: return
         if not self.submit_script: return
 
         if not self.host:
-            self.pid = condor_submit(self.submit_script)
+            self.pid = condor_submit(self.submit_script, dag=dag)
         else:
             h = self.host
             self.pid = condor_submit(self.submit_script,
                 hostname=h.hostname, username=h.username, password=h.password,
-                port=h.port, env=h.env, remotedir=h.remotedir)
+                port=h.port, env=h.env, remotedir=h.remotedir, dag=dag)
 
         self.save()
         self.update_status()
@@ -132,4 +132,7 @@ class CondorDagJob(AbstractJobBaseClass):
     """
     submit_script = models.FileField(upload_to='condor_jobs', blank=False)
     executable = models.FileField(upload_to='condor_exec', blank=True)
+
+    def submit(self, **kwargs):
+        super(CondorDagJob, self).submit(dag=True, **kwargs)
 
