@@ -117,8 +117,8 @@ def condor_status(pid, **kwargs):
     if stderr:
         raise CondorError('condor_status error: %s' % stderr)
 
-    if not stdout:  job_status = ('Completed', None)
-    else:           job_status = (condor_status_dict[stdout], stdout)
+    if not stdout:  job_status = 'Completed'
+    else:           job_status = condor_status_dict[stdout]
 
     return job_status
 
@@ -135,6 +135,21 @@ def condor_submit(submit_script, **kwargs):
         # return the PID for this host
         temp = re.search(r'job\(s\) submitted to cluster \d+', stdout).group()
         return int(re.search(r'\d+', temp).group())
+
+
+def condor_rm(pid, **kwargs):
+    """ Run condor_submit for job """
+
+    remove = 'condor_rm'
+
+    (stdout, stderr) = call_condor(remove, '%s' % pid, **kwargs)
+
+    if stderr: raise CondorError('condor_rm error: %s' % stderr)
+
+    if not stderr and stdout:
+        if stdout == 'Job %d.0 marked for removal' % pid:
+            return True
+    return False    
 
 condor_classad_template = """
 Executable              = ${executable}

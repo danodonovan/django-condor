@@ -3,7 +3,7 @@ from django.db import models
 
 from condor import CONDOR_RAM_GB, condorBinaryUpload, condorScriptUpload
 from condor.fields import JSONField
-from condor.condor_tools import condor_status, condor_submit, condor_classad_template
+from condor.condor_tools import condor_status, condor_submit, condor_classad_template, condor_rm
 
 class CondorHost(models.Model):
     """ Hold details for the condor host """
@@ -37,7 +37,10 @@ class AbstractJobBaseClass(models.Model):
 
     def update_status(self):
         """ Update the job status for the given pid """
-        if not self.pid: return
+        changed = False
+        if not self.pid: return changed
+
+        prevStatus = self.status
 
         if not self.host:
             self.status = condor_status(self.pid)
@@ -50,6 +53,11 @@ class AbstractJobBaseClass(models.Model):
         self.update = datetime.datetime.now()
         self.store_history()
         self.save()
+
+        if self.status is not prevStatus:
+            changed = False
+        
+        return changed
 
     def store_history(self, save=False):
         """ store update in history """
@@ -74,6 +82,22 @@ class AbstractJobBaseClass(models.Model):
             self.pid = condor_submit(self.submit_script,
                 hostname=h.hostname, username=h.username, password=h.password,
                 port=h.port, env=h.env, remotedir=h.remotedir, dag=dag)
+
+        self.save()
+        self.update_status()
+
+
+    def rm(self):
+        """ kill a condor job """
+        if not self.pid: return
+
+        if not self.host:
+            success = condor_rm(self.pid)
+        else:
+            h = self.host
+            success = condor_rm(self.pid,
+                hostname=h.hostname, username=h.username, password=h.password,
+                port=h.port, env=h.env, remotedir=h.remotedir)
 
         self.save()
         self.update_status()
