@@ -26,7 +26,7 @@ class JSONField(models.TextField):
 
         return value
 
-    def get_db_prep_value(self, value):
+    def get_prep_value(self, value):
         """Convert JSON object to a string"""
 
         if isinstance(value, basestring):
