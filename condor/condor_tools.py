@@ -85,15 +85,15 @@ def _connect_call(command, env, hostname, port, username, password, remotedir):
 
     ## try to connect with system host keys, but this may not work (ie on OSX)
     try:
-        client.connect(hostname, port, username, password)
+        client.connect(hostname, int(port), username, password)
     except paramiko.PasswordRequiredException as e:
         if e.message == 'Private key file is encrypted':
             if not password:
                 raise CondorError('Paramiko Error: %s - you may need to supply a password' % (e.message))
             else:
                 raise CondorError('Paramiko Error: %s - your password may be incorrect' % (e.message))
-    except Exception as e:
-        raise CondorError('Error: %s' % (e.message))
+    #except Exception as e:
+    #    raise CondorError('Error: %s' % (e.message))
 
     try:
         stdin_fo, stdout_fo, stderr_fo = client.exec_command(command)
