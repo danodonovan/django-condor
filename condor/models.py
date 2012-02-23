@@ -15,6 +15,12 @@ class CondorHost(models.Model):
     env = JSONField(blank=True)
     remotedir = models.CharField(max_length=255)
 
+    def __str__(self):
+        return unicode(self).encode('utf-8')
+
+    def __unicode__(self):
+        return '<condor host %d : %s>' % (self.hostname, self.username)
+
 class AbstractJobBaseClass(models.Model):
     """ Abstract Base Class for a condor job
     """
