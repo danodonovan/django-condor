@@ -25,15 +25,16 @@ class AbstractJobBaseClass(models.Model):
     """ Abstract Base Class for a condor job
     """
     pid = models.PositiveIntegerField(default=0)
+    created = models.DateTimeField(auto_now_add=True)
     status = models.CharField(max_length=32, default='Not Submitted')
-    update = models.DateTimeField(auto_now_add=True)
 
     history = models.TextField()
 
-    host = models.ForeignKey('CondorHost', null=True)
-
     name = models.CharField(max_length=255, blank=True)
-    timeout = models.IntegerField(default=1800)
+
+    submit_script = models.FileField(upload_to='condor_jobs', blank=False)
+
+    host = models.ForeignKey('CondorHost', null=True)
 
     def __str__(self):
         return unicode(self).encode('utf-8')
@@ -56,7 +57,6 @@ class AbstractJobBaseClass(models.Model):
                 hostname=h.hostname, username=h.username, password=h.password,
                 port=h.port, env=h.env, remotedir=h.remotedir)
 
-        self.update = datetime.datetime.now()
         self.store_history()
         self.save()
 
@@ -67,12 +67,13 @@ class AbstractJobBaseClass(models.Model):
 
     def store_history(self, save=False):
         """ store update in history """
+        timestamp = '%s' % datetime.datetime.now()
         if not self.history:
-            self.history = repr({self.update:self.status})
+            self.history = repr({timestamp:self.status})
             return
         history = eval(self.history)
         if not history.has_key(self.update):
-            history[self.update] = self.status
+            history[timestamp] = self.status
         self.history = repr(history)
         if save: self.save()
 
@@ -160,7 +161,6 @@ class CondorDagJob(AbstractJobBaseClass):
         or on a remote scheduler. A DAG owns and submits multiple individual condor jobs that
         are not traked by django condor
     """
-    submit_script = models.FileField(upload_to='condor_jobs', blank=False)
     executable = models.FileField(upload_to='condor_exec', blank=True)
 
     def submit(self, **kwargs):
