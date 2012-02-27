@@ -15,6 +15,13 @@ class CondorHost(models.Model):
     env = JSONField(blank=True)
     remotedir = models.CharField(max_length=255)
 
+    def __str__(self):
+        return unicode(self).encode('utf-8')
+
+    def __unicode__(self):
+        return '<condor host %s@%s>' % (self.username, self.hostname)
+
+
 class AbstractJobBaseClass(models.Model):
     """ Abstract Base Class for a condor job
     """
@@ -75,7 +82,7 @@ class AbstractJobBaseClass(models.Model):
         if self.pid: return
         if not self.submit_script: return
 
-        if not self.host:
+        if self.host == 'localhost':
             self.pid = condor_submit(self.submit_script, dag=dag)
         else:
             h = self.host
