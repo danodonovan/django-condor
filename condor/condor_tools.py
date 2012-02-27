@@ -1,5 +1,8 @@
 import os, sys
+import logging
 import re, subprocess, shlex
+
+logger = logging.getLogger('condor_debug')
 
 class CondorError(Exception):
     def __init__(self, value):
@@ -32,15 +35,18 @@ def call_condor(*args, **kwargs):
     remotedir= kwargs['remotedir']if kwargs.has_key('remotedir')else None
 
     env = kwargs['env'] if kwargs.has_key('env') else None
-
     command = ' '.join(args)
 
-    if not hostname:
+    if hostname == 'localhost':
+        logger.debug('call_condor localhost')
         # simple system call to local machine
-        (stdout, stderr) = _call(command, env)
-        stdout = stdout[0]
+        commands = [arg.strip() for arg in args]
+        (stdout, stderr) = _call(commands, env, remotedir=remotedir)
+        stdout = stdout[0] if stdout else None
     else:
         # more complex call using paramiko
+        logger.debug('call_condor remote %s %s %s %s %s %s %s' % \
+            (command, env, hostname, port, username, password, remotedir))
         (stdout, stderr) = _connect_call(   command, env, hostname, port,
                                             username, password, remotedir )
 
@@ -49,16 +55,25 @@ def call_condor(*args, **kwargs):
         raise CondorError( 'call_condor error cmd not found: %s Full error: %s' % \
             (command, stderr) )
 
+    if stderr.__contains__( ': Unable to read file: ' ):
+        raise CondorError( 'call_condor error could not read file: %s Full error: %s' % \
+            (command, stderr) )
+
     return (stdout, stderr)
 
-def _call(command, env):
+def _call(command, env, remotedir=None):
     """ Local call command """
+    if remotedir:
+        logger.debug('_call remote dir %s exists' % remotedir)
+        command = ['cd', '%s' % remotedir, ';'] + command
+
     try:
+        logger.debug('_call execute: %s - %s' % (command, env))
         p = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=env)
     except OSError:
         raise CondorError('_call call_condor error cmd: %s' % command)
 
-    stdout, stderr = p.stdout.readlines(), p.stderr.read()
+    return p.stdout.readlines(), p.stderr.read()
 
 def _connect_call(command, env, hostname, port, username, password, remotedir):
     """ Remote call command """
@@ -126,6 +141,8 @@ def condor_submit(submit_script, **kwargs):
     """ Run condor_submit for job """
 
     submit = 'condor_submit_dag' if kwargs.has_key('dag') and kwargs['dag'] else 'condor_submit'
+
+    logger.debug('condor_submit %s' % kwargs)
 
     (stdout, stderr) = call_condor(submit, '%s' % submit_script, **kwargs)
 
